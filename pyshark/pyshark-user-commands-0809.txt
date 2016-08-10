@@ -1,0 +1,56 @@
+# bgill@psc.edu
+
+hadoop dfs -ls /datasets
+
+hadoop com.sun.tools.javac.Main WordCount.java
+jar cf wc.jar WordCount*.class
+hadoop jar wc.jar WordCount /datasets/compleat.txt output -D mapred.reduce.tasks=2 
+
+hadoop jar /opt2/hadoop/hadoop/share/hadoop/tools/lib/hadoop-streaming*.jar -input /datasets/plays  -output streaming-out -mapper '/bin/cat' -reducer '/usr/bin/wc -l'
+
+hadoop jar $HADOOP_HOME/share/hadoop/tools/lib/hadoop-streaming*.jar -file mapper.py -mapper mapper.py -file reducer.py -reducer reducer.py -input /datasets/plays/ -output pyout
+
+pyspark
+
+data = [1, 2, 3, 4, 5]
+distData = sc.parallelize(data)
+distData.take(2)
+distData.map(lambda s: s+1)
+newrdd=distData.map(lambda s: s+1)
+newrdd.take(2)
+
+evenboolrdd=distData.map(lambda s: s % 2 == 0)
+evenboolrdd.collect()
+evenboolrdd.distinct().collect()
+evenrdd=distData.filter(lambda s: s % 2 == 0)
+evenrdd.collect()
+addrdd=distData.map(lambda s: s+1)
+distData.reduce(lambda a,b: a+b)
+
+addrdd.union(evenrdd).collect()
+
+pairs1 = [[1,2],[3,4],[5,6]]
+pairs2 = [[1,7],[3,50],[5,6],[100,200]]
+
+p1 = sc.parallelize(pairs1)
+p2 = sc.parallelize(pairs2)
+
+p1.join(p2).collect()
+p1.pipe("grep 1").collect()
+
+lines = sc.textFile("hdfs://r741:/datasets/compleat.txt")
+love=lines.filter(lambda line: "love" in line)
+lines.count()
+love.count()
+lovefool=love.filter(lambda line: "fool" in line)
+lovefool.count()
+for item in lovefool.collect(): print item
+lovefool.saveAsTextFile("lovefools-hdfs")
+import getpass
+lovefool.saveAsTextFile("file:///home/%s/lovefools-output" % getpass.getuser())
+
+spark-submit /tmp/lettercount.py
+spark-submit $SPARK_HOME/examples/src/main/python/mllib/kmeans.py hdfs://r741:/datasets/kmeans_data.txt 3
+
+
+
